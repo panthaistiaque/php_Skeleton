@@ -1,0 +1,16 @@
+<h1>500 Internal Server Error</h1><pre style="white-space:pre-wrap;font:12px/1.4 monospace;background:#f6f8fa;padding:16px;border-radius:6px;">Error: Cannot modify readonly property App\Core\Validator::$data
+
+E:\xampp\htdocs\php_Skeleton\app\Core\Validator.php:53
+
+#0 E:\xampp\htdocs\php_Skeleton\app\Core\Validator.php(58): App\Core\Validator-&gt;__construct(Array)
+#1 E:\xampp\htdocs\php_Skeleton\app\Core\Controller.php(55): App\Core\Validator::make(Array, Array)
+#2 E:\xampp\htdocs\php_Skeleton\app\Controllers\AuthController.php(20): App\Core\Controller-&gt;validate(Array)
+#3 E:\xampp\htdocs\php_Skeleton\app\Core\App.php(66): App\Controllers\AuthController-&gt;login()
+#4 E:\xampp\htdocs\php_Skeleton\app\Middleware\CsrfMiddleware.php(24): App\Core\App-&gt;App\Core\{closure}()
+#5 E:\xampp\htdocs\php_Skeleton\app\Core\App.php(74): App\Middleware\CsrfMiddleware-&gt;handle(Object(App\Core\Request), Object(Closure))
+#6 E:\xampp\htdocs\php_Skeleton\app\Middleware\GuestMiddleware.php(22): App\Core\App-&gt;App\Core\{closure}()
+#7 E:\xampp\htdocs\php_Skeleton\app\Core\App.php(74): App\Middleware\GuestMiddleware-&gt;handle(Object(App\Core\Request), Object(Closure))
+#8 E:\xampp\htdocs\php_Skeleton\app\Core\App.php(78): App\Core\App-&gt;App\Core\{closure}()
+#9 E:\xampp\htdocs\php_Skeleton\app\Core\App.php(35): App\Core\App-&gt;handle()
+#10 E:\xampp\htdocs\php_Skeleton\public\index.php(63): App\Core\App-&gt;dispatch()
+#11 {main}</pre>

@@ -1,0 +1,12 @@
+/vendor/
+.env
+/storage/logs/*.log
+/storage/backups/*.sql.gz
+/storage/cache/*
+!/storage/logs/.gitkeep
+!/storage/backups/.gitkeep
+!/storage/uploads/.gitkeep
+!/storage/mails/.gitkeep
+.idea/
+.vscode/
+*.swp

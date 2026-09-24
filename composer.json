@@ -1,0 +1,29 @@
+{
+    "name": "skeleton/php-skeleton-app",
+    "description": "A reusable PHP 8.2 Skeleton Application - MVC-inspired, MySQL/PDO, secure by default.",
+    "type": "project",
+    "keywords": ["php", "skeleton", "mvc", "mysql", "pdo", "authentication", "rbac"],
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-autoload-dump": [
+            "@php -r \"@mkdir('storage/logs', 0775, true); @mkdir('storage/backups', 0775, true); @mkdir('storage/uploads', 0775, true); @mkdir('storage/mails', 0775, true); @mkdir('storage/cache', 0775, true);\""
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

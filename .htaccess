@@ -1,0 +1,16 @@
+# PHP Skeleton - Apache root handler.
+# Rewrites every request into /public so the document root stays locked
+# down to the public/ directory (framework files are not web-accessible).
+Options -Indexes
+RewriteEngine On
+
+# Bare base URL -> public front controller.
+RewriteRule ^$ public/index.php [L]
+
+# Uncomment and set if APP_URL detection fails with your virtual host.
+# RewriteBase /php_Skeleton/
+
+# Forward all non-existing files/dirs into the public front controller.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
