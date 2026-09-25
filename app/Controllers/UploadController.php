@@ -22,20 +22,68 @@ final class UploadController extends Controller
         'json' => 'application/json', 'sql' => 'application/sql',
     ];
 
+    /**
+     * Accepts a display date ("24 Sep 2026") or ISO ("2026-09-24") and returns
+     * a "Y-m-d" string for SQL comparisons, or null when unparseable/empty.
+     */
+    private function normalizeDateFilter(string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+        $dt = \DateTime::createFromFormat('d M Y', $value);
+        if ($dt === false) {
+            $dt = \DateTime::createFromFormat('Y-m-d', $value);
+        }
+        if ($dt === false) {
+            $ts = strtotime($value);
+            if ($ts === false) {
+                return null;
+            }
+            $dt = (new \DateTime())->setTimestamp($ts);
+        }
+        $dt->setTime(0, 0);
+
+        return $dt->format('Y-m-d');
+    }
+
     public function index(): string
     {
         $page = (int)($this->request->query('page', 1));
         $perPage = (int)setting('general.records_per_page', 20);
         $category = trim((string)$this->request->query('category', ''));
+        $dateFrom = trim((string)$this->request->query('date_from', ''));
+        $dateTo = trim((string)$this->request->query('date_to', ''));
+        $userId = (int)$this->request->query('user_id', 0);
 
         $pdo = \App\Core\Database::pdo();
 
-        $where = '';
+        $conditions = [];
         $params = [];
         if ($category !== '') {
-            $where = ' WHERE f.category = :category';
+            $conditions[] = 'f.category = :category';
             $params[':category'] = $category;
         }
+        if (($dateFromSql = $this->normalizeDateFilter($dateFrom)) !== null) {
+            $conditions[] = 'f.created_at >= :date_from';
+            $params[':date_from'] = $dateFromSql . ' 00:00:00';
+        } else {
+            $dateFrom = '';
+        }
+        if (($dateToSql = $this->normalizeDateFilter($dateTo)) !== null) {
+            $conditions[] = 'f.created_at <= :date_to';
+            $params[':date_to'] = $dateToSql . ' 23:59:59';
+        } else {
+            $dateTo = '';
+        }
+        if ($userId > 0) {
+            $conditions[] = 'f.user_id = :user_id';
+            $params[':user_id'] = $userId;
+        } else {
+            $userId = 0;
+        }
+        $where = $conditions !== [] ? ' WHERE ' . implode(' AND ', $conditions) : '';
 
         $countStmt = $pdo->prepare('SELECT COUNT(*) FROM `uploads` f' . $where);
         $countStmt->execute($params);
@@ -65,12 +113,20 @@ final class UploadController extends Controller
              GROUP BY category ORDER BY category'
         )->fetchAll();
 
+        $uploaders = $pdo->query(
+            'SELECT DISTINCT u.id, u.name FROM `uploads` f
+             JOIN `users` u ON u.id = f.user_id
+             ORDER BY u.name'
+        )->fetchAll();
+
         return $this->view('files/index', [
-            'pageTitle'  => 'File Uploads',
-            'files'      => $stmt->fetchAll(),
-            'categories' => $categories,
-            'filters'    => ['category' => $category],
-            'pagination' => ['total' => $total, 'page' => $page, 'per_page' => $perPage, 'last_page' => $lastPage],
+            'pageTitle'            => 'File Uploads',
+            'pageUsesDatePicker'   => true,
+            'files'                => $stmt->fetchAll(),
+            'categories'           => $categories,
+            'uploaders'            => $uploaders,
+            'filters'              => ['category' => $category, 'date_from' => $dateFrom, 'date_to' => $dateTo, 'user_id' => $userId],
+            'pagination'           => ['total' => $total, 'page' => $page, 'per_page' => $perPage, 'last_page' => $lastPage],
         ]);
     }
 

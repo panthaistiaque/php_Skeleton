@@ -14,11 +14,13 @@
             </div>
             <div class="col-6 col-md-2">
                 <label class="form-label small mb-1">From</label>
-                <input type="date" name="from" class="form-control form-control-sm" value="<?= e($filters['from']) ?>">
+                <input type="text" name="from" class="form-control form-control-sm date-range-filter"
+                       placeholder="e.g. 24 Sep 2026" maxlength="11" autocomplete="off" value="<?= e($filters['from']) ?>">
             </div>
             <div class="col-6 col-md-2">
                 <label class="form-label small mb-1">To</label>
-                <input type="date" name="to" class="form-control form-control-sm" value="<?= e($filters['to']) ?>">
+                <input type="text" name="to" class="form-control form-control-sm date-range-filter"
+                       placeholder="e.g. 24 Sep 2026" maxlength="11" autocomplete="off" value="<?= e($filters['to']) ?>">
             </div>
             <div class="col-6 col-md-3">
                 <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-search me-1"></i>Filter</button>
@@ -55,7 +57,7 @@
                     <td class="small"><?= e($row['description'] ?? '') ?></td>
                     <td><?= $row['module'] ? '<span class="badge bg-light text-dark border text-capitalize">' . e($row['module']) . '</span>' : '—' ?></td>
                     <td class="small text-muted"><?= e($row['ip_address'] ?? '') ?></td>
-                    <td class="small text-muted text-end pe-3"><?= e(time_ago($row['created_at'])) ?></td>
+                    <td class="small text-muted text-end pe-3"><?= e(format_datetime($row['created_at'])) ?></td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>
@@ -64,8 +66,8 @@
 
     <?php if (!empty($rows['last_page']) && $rows['last_page'] > 1): ?>
         <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-            <small class="text-muted"><?= (int)$rows['total'] ?> records</small>
-            <?php require VIEW_PATH . '/partials/pagination.php'; ?>
+            <small class="text-muted">Showing <?= count($rows['items']) ?> of <?= (int)$rows['total'] ?> records</small>
+            <?php $pagination = $rows; require VIEW_PATH . '/partials/pagination.php'; unset($pagination); ?>
         </div>
     <?php endif; ?>
 </div>

@@ -1,4 +1,4 @@
-<?php /** @var array $files @var array $categories @var array $filters @var array $pagination @var array $appUser */ ?>
+<?php /** @var array $files @var array $categories @var array $uploaders @var array $filters @var array $pagination @var array $appUser */ ?>
 <?php if (user_can('files.upload')): ?>
 <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
@@ -49,10 +49,31 @@
                 </select>
             </div>
             <div class="col-6 col-md-2">
-                <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-funnel me-1"></i>Filter</button>
+                <label class="form-label small mb-1">Uploaded From</label>
+                <input type="text" name="date_from" class="form-control form-control-sm date-range-filter"
+                       placeholder="e.g. 24 Sep 2026" maxlength="11" autocomplete="off"
+                       value="<?= e($filters['date_from']) ?>">
             </div>
-            <div class="col-6 col-md-2 text-md-end">
-                <a class="btn btn-outline-secondary btn-sm" href="<?= url('/files') ?>">Reset</a>
+            <div class="col-6 col-md-2">
+                <label class="form-label small mb-1">Uploaded To</label>
+                <input type="text" name="date_to" class="form-control form-control-sm date-range-filter"
+                       placeholder="e.g. 24 Sep 2026" maxlength="11" autocomplete="off"
+                       value="<?= e($filters['date_to']) ?>">
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label small mb-1">Uploaded By</label>
+                <select name="user_id" class="form-select form-select-sm">
+                    <option value="0">Anyone</option>
+                    <?php foreach ($uploaders as $user): ?>
+                        <option value="<?= (int)$user['id'] ?>" <?= (int)$filters['user_id'] === (int)$user['id'] ? 'selected' : '' ?>>
+                            <?= e($user['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm flex-fill" type="submit"><i class="bi bi-funnel me-1"></i>Filter</button>
+                <a class="btn btn-outline-secondary btn-sm flex-fill" href="<?= url('/files') ?>">Reset</a>
             </div>
         </form>
     </div>
@@ -90,7 +111,7 @@
                             <span class="badge bg-secondary-subtle text-secondary border">you</span>
                         <?php endif; ?>
                     </td>
-                    <td class="small text-muted"><?= e(time_ago($file['created_at'])) ?></td>
+                    <td class="small text-muted"><?= e(format_datetime($file['created_at'])) ?></td>
                     <td class="text-end pe-3">
                         <div class="btn-group btn-group-sm">
                             <a class="btn btn-outline-primary" href="<?= url('/files/' . (int)$file['id'] . '/download') ?>"><i class="bi bi-download me-1"></i>Download</a>
@@ -109,10 +130,10 @@
         </table>
     </div>
 
-    <?php if (!empty($pagination) && $pagination['last_page'] > 1): ?>
+    <?php if (!empty($files)): ?>
         <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-            <small class="text-muted"><?= (int)$pagination['total'] ?> files</small>
-            <?php $paginationQuery = ['category' => $filters['category'] ?: null]; require VIEW_PATH . '/partials/pagination.php'; unset($paginationQuery); ?>
+            <small class="text-muted">Showing <?= count($files) ?> of <?= (int)$pagination['total'] ?> files</small>
+            <?php $paginationQuery = ['category' => $filters['category'] ?: null, 'date_from' => $filters['date_from'] ?: null, 'date_to' => $filters['date_to'] ?: null, 'user_id' => $filters['user_id'] ?: null]; require VIEW_PATH . '/partials/pagination.php'; unset($paginationQuery); ?>
         </div>
     <?php endif; ?>
 </div>

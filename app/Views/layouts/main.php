@@ -10,6 +10,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('css/app.css') ?>">
+    <?php if (!empty($pageUsesDatePicker)): ?>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.10.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <?php endif; ?>
 </head>
 <body class="app-body">
 
@@ -80,13 +83,22 @@
             <ul class="nav flex-column">
                 <?php foreach (($sidebarMenus ?? []) as $menu): $item = $menu['item']; ?>
                     <?php if (!empty($menu['children'])): ?>
+                        <?php
+                        $menuOpen = false;
+                        foreach (($menu['children'] ?? []) as $child) {
+                            if (isset($child['route']) && $child['route'] !== '' && str_starts_with((string)($currentPath ?? ''), (string)$child['route'])) {
+                                $menuOpen = true;
+                                break;
+                            }
+                        }
+                        ?>
                         <li class="nav-item">
-                            <a class="nav-link sidebar-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#menu-<?= e($item['slug']) ?>" aria-expanded="false">
+                            <a class="nav-link sidebar-toggle <?= $menuOpen ? 'active' : 'collapsed' ?>" data-bs-toggle="collapse" data-bs-target="#menu-<?= e($item['slug']) ?>" aria-expanded="<?= $menuOpen ? 'true' : 'false' ?>">
                                 <i class="bi <?= e($item['icon'] ?? 'bi-circle') ?>"></i>
                                 <span><?= e($item['title']) ?></span>
                                 <i class="bi bi-chevron-down ms-auto sidebar-arrow"></i>
                             </a>
-                            <div class="collapse" id="menu-<?= e($item['slug']) ?>">
+                            <div class="collapse <?= $menuOpen ? 'show' : '' ?>" id="menu-<?= e($item['slug']) ?>">
                                 <ul class="nav flex-column sub-nav">
                                     <?php foreach ($menu['children'] as $child): ?>
                                         <li class="nav-item">
@@ -135,5 +147,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?= asset('js/app.js') ?>"></script>
+<?php if (!empty($pageUsesDatePicker)): ?>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.10.0/dist/js/bootstrap-datepicker.min.js"></script>
+    <script>
+        $('.date-range-filter').datepicker({
+            format: 'd M yyyy',
+            autoclose: true,
+            todayHighlight: true
+        });
+    </script>
+<?php endif; ?>
 </body>
 </html>

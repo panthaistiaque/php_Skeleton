@@ -20,6 +20,43 @@ final class AuditController extends Controller
         return (int)setting('general.records_per_page', 20);
     }
 
+    /**
+     * Accepts a display date ("24 Sep 2026") or ISO ("2026-09-24") and returns
+     * a "Y-m-d" string for SQL comparisons, or null when unparseable/empty.
+     */
+    private function normalizeDate(string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+        $dt = \DateTime::createFromFormat('d M Y', $value);
+        if ($dt === false) {
+            $dt = \DateTime::createFromFormat('Y-m-d', $value);
+        }
+        if ($dt === false) {
+            $ts = strtotime($value);
+            if ($ts === false) {
+                return null;
+            }
+            $dt = (new \DateTime())->setTimestamp($ts);
+        }
+        $dt->setTime(0, 0);
+
+        return $dt->format('Y-m-d');
+    }
+
+    /**
+     * Copy of the view filters with from/to normalized to Y-m-d for SQL.
+     */
+    private function sqlFilters(array $filters): array
+    {
+        $filters['from'] = $this->normalizeDate((string)($filters['from'] ?? '')) ?? '';
+        $filters['to'] = $this->normalizeDate((string)($filters['to'] ?? '')) ?? '';
+
+        return $filters;
+    }
+
     public function logins(): string
     {
         $filters = [
@@ -31,9 +68,10 @@ final class AuditController extends Controller
         ];
 
         return $this->view('audit/logins', [
-            'pageTitle'  => 'Login History',
-            'rows'       => AuditRepository::loginHistory($filters, $this->page(), $this->perPage()),
-            'filters'    => $filters,
+            'pageTitle'          => 'Login History',
+            'pageUsesDatePicker' => true,
+            'rows'               => AuditRepository::loginHistory($this->sqlFilters($filters), $this->page(), $this->perPage()),
+            'filters'            => $filters,
         ]);
     }
 
@@ -48,10 +86,11 @@ final class AuditController extends Controller
         ];
 
         return $this->view('audit/logins', [
-            'pageTitle' => 'Failed Login Attempts',
-            'rows'      => AuditRepository::loginHistory(['status' => 'failed'] + $filters, $this->page(), $this->perPage()),
-            'filters'   => $filters,
-            'failedOnly'=> true,
+            'pageTitle'          => 'Failed Login Attempts',
+            'pageUsesDatePicker' => true,
+            'rows'               => AuditRepository::loginHistory($this->sqlFilters(['status' => 'failed'] + $filters), $this->page(), $this->perPage()),
+            'filters'            => $filters,
+            'failedOnly'         => true,
         ]);
     }
 
@@ -66,9 +105,10 @@ final class AuditController extends Controller
         ];
 
         return $this->view('audit/activities', [
-            'pageTitle' => 'Activity Logs',
-            'rows'      => AuditRepository::activities($filters, $this->page(), $this->perPage()),
-            'filters'   => $filters,
+            'pageTitle'          => 'Activity Logs',
+            'pageUsesDatePicker' => true,
+            'rows'               => AuditRepository::activities($this->sqlFilters($filters), $this->page(), $this->perPage()),
+            'filters'            => $filters,
         ]);
     }
 
@@ -82,9 +122,10 @@ final class AuditController extends Controller
         ];
 
         return $this->view('audit/security', [
-            'pageTitle' => 'Security Events',
-            'rows'      => AuditRepository::securityEvents($filters, $this->page(), $this->perPage()),
-            'filters'   => $filters,
+            'pageTitle'          => 'Security Events',
+            'pageUsesDatePicker' => true,
+            'rows'               => AuditRepository::securityEvents($this->sqlFilters($filters), $this->page(), $this->perPage()),
+            'filters'            => $filters,
         ]);
     }
 
